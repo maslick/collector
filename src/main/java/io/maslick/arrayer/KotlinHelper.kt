@@ -1,5 +1,8 @@
 package io.maslick.arrayer
 
+import java.text.SimpleDateFormat
+import java.util.*
+
 
 object KotlinHelper {
 
@@ -33,5 +36,10 @@ object KotlinHelper {
         }
         if (bucket.isNotEmpty()) result.add(bucket)
         return result.toList()
+    }
+
+    fun formatDate(timestamp: Long?): String {
+        val formatter = SimpleDateFormat("HH:mm:ss")
+        return formatter.format(Date(timestamp!!))
     }
 }

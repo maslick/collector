@@ -2,15 +2,10 @@ package io.maslick.arrayer
 
 import com.github.davidmoten.rx.Transformers
 import io.maslick.arrayer.Helper.randomInteger
+import io.maslick.arrayer.KotlinHelper.toListWhile
 import org.junit.Assert
 import org.junit.Test
 import rx.Observable
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.math.roundToInt
-import io.maslick.arrayer.KotlinHelper.groupInWindows
-import io.maslick.arrayer.KotlinHelper.toListWhile
 
 
 class ExampleUnitTest {
@@ -18,87 +13,27 @@ class ExampleUnitTest {
     val window10s = 10000L
 
     @Test
-    fun calcCalories() {
-        val data = createTestDataArray(seconds = 60*60, freq = 100)
-        println("data size: ${data.size}")
-
-        val list = Observable
-                .from(data)
-                .compose(groupDataInWindows(window10s))
-                .map { it.map { it.ee!! }.average() }
-                .toList().toBlocking().single().toList()
-
-        println("list size: ${list.size}")
-
-        val mass = 70
-        val calories = list.map { it!! * mass / (3600 / (window10s / 1000)) }.sum().roundToInt()
-
-        println("Burnt: $calories kkal")
-    }
-
-    @Test
-    fun saveToFile() {
-        val data = createTestDataArray(seconds = 20, freq = 5)
-        File("20sec5Hz.txt").printWriter().use { out ->
-            data.forEach {
-                out.println("${it.timestamp} ${it.ee}")
-            }
-        }
-    }
-
-    @Test
-    fun readDataFromFile() {
-        val l = parseDataArrayFromFile("30sec1Hz.txt").map { Data(it.split(" ")[1].toDouble(), it.split(" ")[0].toLong()) }
-        l.forEach { println("${formatDate(it.timestamp)} : ${it.ee}") }
-    }
-
-    @Test
     fun testKotlin() {
         val l = parseDataArrayFromFile("30sec1Hz.txt").map { Data(it.split(" ")[1].toDouble(), it.split(" ")[0].toLong()) }
-        val ethalon = listOf(l.subList(0, 10), l.subList(10, 20), l.subList(20, 30))
+        val ref = listOf(l.subList(0, 10), l.subList(10, 20), l.subList(20, 30))
         val underTest = l.toListWhile({ bucket, i ->  bucket.isEmpty() || i.timestamp!! - bucket[0].timestamp!! < window10s })
-        Assert.assertEquals(ethalon[0].size, underTest[0].size)
-        Assert.assertEquals(ethalon[1].size, underTest[1].size)
-        Assert.assertEquals(ethalon[2].size, underTest[2].size)
-        Assert.assertEquals(ethalon[0], underTest[0])
-        Assert.assertEquals(ethalon[1], underTest[1])
-        Assert.assertEquals(ethalon[2], underTest[2])
+        Assert.assertEquals(ref, underTest)
     }
 
     @Test
     fun testJava() {
         val l = parseDataArrayFromFile("30sec1Hz.txt").map { Data(it.split(" ")[1].toDouble(), it.split(" ")[0].toLong()) }
-        val ethalon = listOf(l.subList(0, 10), l.subList(10, 20), l.subList(20, 30))
+        val ref = listOf(l.subList(0, 10), l.subList(10, 20), l.subList(20, 30))
         val underTest = JavaHelper.toListWhile(l, { bucket, i ->  bucket.isEmpty() || i.timestamp!! - bucket[0].timestamp!! < window10s })
-        Assert.assertEquals(ethalon[0].size, underTest[0].size)
-        Assert.assertEquals(ethalon[1].size, underTest[1].size)
-        Assert.assertEquals(ethalon[2].size, underTest[2].size)
-        Assert.assertEquals(ethalon[0], underTest[0])
-        Assert.assertEquals(ethalon[1], underTest[1])
-        Assert.assertEquals(ethalon[2], underTest[2])
+        Assert.assertEquals(ref, underTest)
     }
 
     @Test
     fun compareAsyncWithSync() {
-        val data = createTestDataArray(seconds = 60, freq = 1)
-        val groupedSync = data.groupInWindows(window10s, {it.timestamp!!})
-
-        val groupedAvg = Observable.from(groupedSync)
-                .map { it.map { it.ee!! }.average() }
-                .toList()
-                .toBlocking()
-                .single()
-                .toList()
-
-        val list = Observable.from(data)
-                .compose(groupDataInWindows(window10s))
-                .map { it.map { it.ee!! }.average() }
-                .toList()
-                .toBlocking()
-                .single()
-                .toList()
-
-        Assert.assertEquals(list, groupedAvg)
+        val data = createTestDataArray(seconds = 60, freq = 1000)
+        val sync = data.toListWhile({ bucket, i ->  bucket.isEmpty() || i.timestamp!! - bucket[0].timestamp!! < window10s })
+        val async = Observable.from(data).compose(groupDataInWindows(window10s)).toList().toBlocking().single().toList()
+        Assert.assertEquals(async, sync)
     }
 
     private fun createTestDataArray(seconds: Int, freq: Int): List<Data> {
@@ -118,15 +53,6 @@ class ExampleUnitTest {
 
     private fun groupDataInWindows(window: Long): Observable.Transformer<Data, List<Data>> {
         return Transformers.toListWhile<Data> { data, i -> data.isEmpty() || i.timestamp!! - data[0].timestamp!! < window }
-    }
-
-    private fun List<Double>.average(): Double? {
-        return this.sum()/this.size
-    }
-
-    private fun formatDate(timestamp: Long?): String {
-        val formatter = SimpleDateFormat("HH:mm:ss")
-        return formatter.format(Date(timestamp!!))
     }
 }
 
