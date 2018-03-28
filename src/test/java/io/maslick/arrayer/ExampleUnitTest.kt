@@ -1,4 +1,4 @@
-package si.ijs.heartman.iotool.arband
+package io.maslick.arrayer
 
 import com.github.davidmoten.rx.Transformers
 import io.maslick.arrayer.Helper.randomInteger
@@ -9,6 +9,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
+import io.maslick.arrayer.KotlinHelper.groupInWindows
 
 
 class ExampleUnitTest {
@@ -51,10 +52,23 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun testtt() {
+    fun testKotlin() {
         val l = parseDataArrayFromFile("30sec1Hz.txt").map { Data(it.split(" ")[1].toDouble(), it.split(" ")[0].toLong()) }
         val ethalon = listOf(l.subList(0, 10), l.subList(10, 20), l.subList(20, 30))
         val underTest = l.groupInWindows(window10s, { it.timestamp!! })
+        Assert.assertEquals(ethalon[0].size, underTest[0].size)
+        Assert.assertEquals(ethalon[1].size, underTest[1].size)
+        Assert.assertEquals(ethalon[2].size, underTest[2].size)
+        Assert.assertEquals(ethalon[0], underTest[0])
+        Assert.assertEquals(ethalon[1], underTest[1])
+        Assert.assertEquals(ethalon[2], underTest[2])
+    }
+
+    @Test
+    fun testJava() {
+        val l = parseDataArrayFromFile("30sec1Hz.txt").map { Data(it.split(" ")[1].toDouble(), it.split(" ")[0].toLong()) }
+        val ethalon = listOf(l.subList(0, 10), l.subList(10, 20), l.subList(20, 30))
+        val underTest = JavaHelper.groupDataInWindows(l, window10s, { it.timestamp })
         Assert.assertEquals(ethalon[0].size, underTest[0].size)
         Assert.assertEquals(ethalon[1].size, underTest[1].size)
         Assert.assertEquals(ethalon[2].size, underTest[2].size)
@@ -83,11 +97,8 @@ class ExampleUnitTest {
                 .single()
                 .toList()
 
-
         Assert.assertEquals(list, groupedAvg)
     }
-
-
 
     private fun createTestDataArray(seconds: Int, freq: Int): List<Data> {
         val list = mutableListOf<Data>()
@@ -115,37 +126,6 @@ class ExampleUnitTest {
     private fun formatDate(timestamp: Long?): String {
         val formatter = SimpleDateFormat("HH:mm:ss")
         return formatter.format(Date(timestamp!!))
-    }
-
-    private fun List<Data>.groupInWindows(window: Long): List<List<Data>> {
-        val ret = mutableListOf<List<Data>>()
-        var bucket = mutableListOf<Data>()
-        this.forEach { i:Data ->
-            if (bucket.isEmpty() || i.timestamp!! - bucket[0].timestamp!! < window)
-                bucket.add(i)
-            else {
-                ret.add(bucket)
-                bucket = mutableListOf()
-            }
-        }
-        if (bucket.isNotEmpty()) ret.add(bucket)
-        return ret.toList()
-    }
-
-    private fun <T> List<T>.groupInWindows(window: Long, lambda: (T) -> Long): List<List<T>> {
-        val ret = mutableListOf<List<T>>()
-        var bucket = mutableListOf<T>()
-        this.forEach { i ->
-            if (bucket.isEmpty() || lambda.invoke(i) - lambda.invoke(bucket[0]) < window)
-                bucket.add(i)
-            else {
-                ret.add(bucket)
-                bucket = mutableListOf()
-                bucket.add(i)
-            }
-        }
-        if (bucket.isNotEmpty()) ret.add(bucket)
-        return ret.toList()
     }
 }
 
