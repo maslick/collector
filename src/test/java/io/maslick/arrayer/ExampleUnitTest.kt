@@ -36,8 +36,8 @@ class ExampleUnitTest {
 
     @Test
     fun saveToFile() {
-        val data = createTestDataArray(seconds = 60, freq = 15)
-        File("60sec15Hz.txt").printWriter().use { out ->
+        val data = createTestDataArray(seconds = 20, freq = 5)
+        File("20sec5Hz.txt").printWriter().use { out ->
             data.forEach {
                 out.println("${it.timestamp} ${it.ee}")
             }
@@ -45,8 +45,27 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun readDataFromFile() {
+        val l = parseDataArrayFromFile("30sec1Hz.txt").map { Data(it.split(" ")[1].toDouble(), it.split(" ")[0].toLong()) }
+        l.forEach { println("${formatDate(it.timestamp)} : ${it.ee}") }
+    }
+
+    @Test
+    fun testtt() {
+        val l = parseDataArrayFromFile("30sec1Hz.txt").map { Data(it.split(" ")[1].toDouble(), it.split(" ")[0].toLong()) }
+        val ethalon = listOf(l.subList(0, 10), l.subList(10, 20), l.subList(20, 30))
+        val underTest = l.groupInWindows(window10s, { it.timestamp!! })
+        Assert.assertEquals(ethalon[0].size, underTest[0].size)
+        Assert.assertEquals(ethalon[1].size, underTest[1].size)
+        Assert.assertEquals(ethalon[2].size, underTest[2].size)
+        Assert.assertEquals(ethalon[0], underTest[0])
+        Assert.assertEquals(ethalon[1], underTest[1])
+        Assert.assertEquals(ethalon[2], underTest[2])
+    }
+
+    @Test
     fun compareAsyncWithSync() {
-        val data = createTestDataArray(seconds = 6000, freq = 45)
+        val data = createTestDataArray(seconds = 60, freq = 1)
         val groupedSync = data.groupInWindows(window10s, {it.timestamp!!})
 
         val groupedAvg = Observable.from(groupedSync)
@@ -68,12 +87,6 @@ class ExampleUnitTest {
         Assert.assertEquals(list, groupedAvg)
     }
 
-    @Test
-    fun hoho() {
-        val data = createTestDataArray(seconds = 12, freq = 2)
-        val groupedSync = data.groupInWindows(window10s, {it.timestamp!!})
-        groupedSync.forEach { println(it) }
-    }
 
 
     private fun createTestDataArray(seconds: Int, freq: Int): List<Data> {
@@ -85,6 +98,10 @@ class ExampleUnitTest {
             list.add(Data(randomInteger(2, 10) * 1.0 + randomInteger(1,10)/10.0, currentTime + i*delta))
 
         return list.toList()
+    }
+
+    private fun parseDataArrayFromFile(filename: String): List<String> {
+        return ClassLoader.getSystemResourceAsStream(filename).bufferedReader().lineSequence().toList()
     }
 
     private fun groupDataInWindows(window: Long): Observable.Transformer<Data, List<Data>> {
@@ -124,6 +141,7 @@ class ExampleUnitTest {
             else {
                 ret.add(bucket)
                 bucket = mutableListOf()
+                bucket.add(i)
             }
         }
         if (bucket.isNotEmpty()) ret.add(bucket)
