@@ -1,4 +1,4 @@
-package io.maslick.arrayer;
+package io.maslick.collector;
 
 import java.util.ArrayList;
 import java.util.List;

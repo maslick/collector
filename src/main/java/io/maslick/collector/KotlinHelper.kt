@@ -1,4 +1,4 @@
-package io.maslick.arrayer
+package io.maslick.collector
 
 import java.text.SimpleDateFormat
 import java.util.*

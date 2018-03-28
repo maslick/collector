@@ -1,8 +1,8 @@
-package io.maslick.arrayer
+package io.maslick.collector
 
 import com.github.davidmoten.rx.Transformers
-import io.maslick.arrayer.Helper.randomInteger
-import io.maslick.arrayer.KotlinHelper.toListWhile
+import io.maslick.collector.Helper.randomInteger
+import io.maslick.collector.KotlinHelper.toListWhile
 import org.junit.Assert
 import org.junit.Test
 import rx.Observable
