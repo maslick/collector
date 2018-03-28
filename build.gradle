@@ -8,18 +8,20 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.netflix.nebula:nebula-publishing-plugin:5.1.0'
+        classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:3.2.0'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'
     }
 }
 
 group 'io.maslick'
-version '1.0-SNAPSHOT'
+version '1.1'
 
 apply plugin: 'java'
 apply plugin: 'kotlin'
 apply plugin: 'nebula.maven-publish'
 apply plugin: 'nebula.compile-api'
 apply plugin: 'nebula.source-jar'
+apply plugin: 'nebula.optional-base'
 apply plugin: 'com.jfrog.bintray'
 
 sourceCompatibility = 1.8
