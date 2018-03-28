@@ -1,21 +1,13 @@
-dist: trusty
 language: java
+
 jdk:
   - oraclejdk8
 
-install: true
-script:
-  - gradle clean test publish
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 
 cache:
   directories:
     - $HOME/.m2
     - $HOME/.gradle/caches/
-
-deploy:
-  on: production
-  provider: bintray
-  skip_cleanup: true
-  file: "bintray.json"
-  user: maslick
-  key: $BINTRAY_API_KEY
+    - $HOME/.gradle/wrapper/
