@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 import io.maslick.arrayer.KotlinHelper.groupInWindows
+import io.maslick.arrayer.KotlinHelper.toListWhile
 
 
 class ExampleUnitTest {
@@ -55,7 +56,7 @@ class ExampleUnitTest {
     fun testKotlin() {
         val l = parseDataArrayFromFile("30sec1Hz.txt").map { Data(it.split(" ")[1].toDouble(), it.split(" ")[0].toLong()) }
         val ethalon = listOf(l.subList(0, 10), l.subList(10, 20), l.subList(20, 30))
-        val underTest = l.groupInWindows(window10s, { it.timestamp!! })
+        val underTest = l.toListWhile({ bucket, i ->  bucket.isEmpty() || i.timestamp!! - bucket[0].timestamp!! < window10s })
         Assert.assertEquals(ethalon[0].size, underTest[0].size)
         Assert.assertEquals(ethalon[1].size, underTest[1].size)
         Assert.assertEquals(ethalon[2].size, underTest[2].size)
@@ -68,7 +69,7 @@ class ExampleUnitTest {
     fun testJava() {
         val l = parseDataArrayFromFile("30sec1Hz.txt").map { Data(it.split(" ")[1].toDouble(), it.split(" ")[0].toLong()) }
         val ethalon = listOf(l.subList(0, 10), l.subList(10, 20), l.subList(20, 30))
-        val underTest = JavaHelper.groupDataInWindows(l, window10s, { it.timestamp })
+        val underTest = JavaHelper.toListWhile(l, { bucket, i ->  bucket.isEmpty() || i.timestamp!! - bucket[0].timestamp!! < window10s })
         Assert.assertEquals(ethalon[0].size, underTest[0].size)
         Assert.assertEquals(ethalon[1].size, underTest[1].size)
         Assert.assertEquals(ethalon[2].size, underTest[2].size)
