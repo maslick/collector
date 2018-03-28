@@ -11,6 +11,3 @@ cache:
     - $HOME/.m2
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
-
-script:
-  - ./gradlew clean build bintrayUpload
