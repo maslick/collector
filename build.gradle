@@ -51,6 +51,7 @@ bintray {
     key = System.getenv('BINTRAY_KEY')
     publications = ['nebula']
     publish = true
+    override = true
     pkg {
         repo = 'maven'
         name = 'collector'
