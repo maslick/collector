@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
             Data(id = 5, name = "Donovan Mitchel")
     )
 
-    val result = list.toListWhile { bucket, d -> bucket.isEmpty() || d.id!! - bucket.first().id!! < 2 }
+    val result = list.toListWhileLazy { bucket, item -> item.id!! - bucket.first().id!! < 2 }
     
     result.forEach {
         println(it.map { it.name })
