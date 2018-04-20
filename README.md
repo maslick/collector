@@ -20,7 +20,7 @@ dependencies {
 
 
 ## Usage
-```
+```kotlin
 import io.maslick.collector.KotlinHelper.toListWhile
 
 data class Data(var id: Long? = null, var name: String? = null)
