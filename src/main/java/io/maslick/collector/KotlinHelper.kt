@@ -38,6 +38,22 @@ object KotlinHelper {
         return result.toList()
     }
 
+    fun <T> List<T>.toListWhileLazy(condition: (List<T>, T) -> Boolean): List<List<T>> {
+        val result = mutableListOf<List<T>>()
+        var bucket = mutableListOf<T>()
+        this.forEach { d ->
+            if (bucket.isEmpty() || condition.invoke(bucket, d))
+                bucket.add(d)
+            else {
+                result.add(bucket)
+                bucket = mutableListOf()
+                bucket.add(d)
+            }
+        }
+        if (bucket.isNotEmpty()) result.add(bucket)
+        return result.toList()
+    }
+
     fun formatDate(timestamp: Long?): String {
         val formatter = SimpleDateFormat("HH:mm:ss")
         return formatter.format(Date(timestamp!!))

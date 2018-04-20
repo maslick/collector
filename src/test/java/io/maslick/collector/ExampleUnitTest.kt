@@ -3,6 +3,7 @@ package io.maslick.collector
 import com.github.davidmoten.rx.Transformers
 import io.maslick.collector.Helper.randomInteger
 import io.maslick.collector.KotlinHelper.toListWhile
+import io.maslick.collector.KotlinHelper.toListWhileLazy
 import org.junit.Assert
 import org.junit.Test
 import rx.Observable
@@ -34,6 +35,28 @@ class ExampleUnitTest {
         val sync = data.toListWhile({ bucket, i ->  bucket.isEmpty() || i.timestamp!! - bucket[0].timestamp!! < window10s })
         val async = Observable.from(data).compose(groupDataInWindows(window10s)).toList().toBlocking().single().toList()
         Assert.assertEquals(async, sync)
+    }
+
+    @Test
+    fun testLazy() {
+        data class Data(var id: Long? = null, var name: String? = null)
+        val list = listOf(
+                Data(id = 1, name = "Michael Jordan"),
+                Data(id = 2, name = "Lebron James"),
+                Data(id = 3, name = "Dwight Howard"),
+                Data(id = 4, name = "Nate Robinson"),
+                Data(id = 5, name = "Donovan Mitchel")
+        )
+
+        val result = list.toListWhileLazy { bucket, d -> d.id!! - bucket.first().id!! < 2 }
+
+        val ref = listOf(
+                listOf("Michael Jordan", "Lebron James"),
+                listOf("Dwight Howard", "Nate Robinson"),
+                listOf("Donovan Mitchel")
+        )
+
+        Assert.assertEquals(ref, result.map { it.map { it.name }})
     }
 
     private fun createTestDataArray(seconds: Int, freq: Int): List<Data> {
