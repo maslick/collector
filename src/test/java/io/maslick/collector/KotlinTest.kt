@@ -22,10 +22,18 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun testJava() {
+    fun testJavaFromKotlin() {
         val l = parseDataArrayFromFile("30sec1Hz.txt").map { Data(it.split(" ")[1].toDouble(), it.split(" ")[0].toLong()) }
         val ref = listOf(l.subList(0, 10), l.subList(10, 20), l.subList(20, 30))
         val underTest = JavaHelper.toListWhile(l, { bucket, i ->  bucket.isEmpty() || i.timestamp!! - bucket[0].timestamp!! < window10s })
+        Assert.assertEquals(ref, underTest)
+    }
+
+    @Test
+    fun testJavaLazyFromKotlin() {
+        val l = parseDataArrayFromFile("30sec1Hz.txt").map { Data(it.split(" ")[1].toDouble(), it.split(" ")[0].toLong()) }
+        val ref = listOf(l.subList(0, 10), l.subList(10, 20), l.subList(20, 30))
+        val underTest = JavaHelper.toListWhileLazy(l, { bucket, i ->  i.timestamp!! - bucket[0].timestamp!! < window10s })
         Assert.assertEquals(ref, underTest)
     }
 
@@ -70,13 +78,13 @@ class ExampleUnitTest {
         return list.toList()
     }
 
-    private fun parseDataArrayFromFile(filename: String): List<String> {
-        return ClassLoader.getSystemResourceAsStream(filename).bufferedReader().lineSequence().toList()
-    }
-
     private fun groupDataInWindows(window: Long): Observable.Transformer<Data, List<Data>> {
         return Transformers.toListWhile<Data> { data, i -> data.isEmpty() || i.timestamp!! - data[0].timestamp!! < window }
     }
 }
 
 data class Data(var ee: Double? = null, var timestamp: Long? = null)
+
+fun parseDataArrayFromFile(filename: String): List<String> {
+    return ClassLoader.getSystemResourceAsStream(filename).bufferedReader().lineSequence().toList()
+}

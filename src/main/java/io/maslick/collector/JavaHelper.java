@@ -37,4 +37,20 @@ public class JavaHelper {
         if (!bucket.isEmpty()) result.add(bucket);
         return result;
     }
+
+    public static <T> List<List<T>> toListWhileLazy(List<T> data, Function1<List<T>, T, Boolean> condition) {
+        List<List<T>> result = new ArrayList<>();
+        List<T> bucket = new ArrayList<>();
+        for (T d : data) {
+            if (bucket.size() == 0 || condition.apply(bucket, d)) {
+                bucket.add(d);
+            } else {
+                result.add(bucket);
+                bucket = new ArrayList<>();
+                bucket.add(d);
+            }
+        }
+        if (!bucket.isEmpty()) result.add(bucket);
+        return result;
+    }
 }
