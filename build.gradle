@@ -8,18 +8,16 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.netflix.nebula:nebula-publishing-plugin:5.1.0'
-        classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:3.0.3'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0'
     }
 }
 
 group 'io.maslick'
-version '1.4'
+version '1.5'
 
 apply plugin: 'java'
 apply plugin: 'kotlin'
 apply plugin: 'nebula.maven-publish'
-apply plugin: 'nebula.provided-base'
 apply plugin: 'nebula.javadoc-jar'
 apply plugin: 'nebula.source-jar'
 apply plugin: 'com.jfrog.bintray'
@@ -31,7 +29,8 @@ repositories {
 }
 
 dependencies {
-    provided "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    testCompile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
     // rxjava
