@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {    
-    compile('io.maslick:collector:1.2')
+    compile('io.maslick:collector:1.4')
 }
 ```
 
